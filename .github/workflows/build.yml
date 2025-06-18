@@ -19,6 +19,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install mypy
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        mypy --install-types --non-interactive
+        mypy -p simplyanalytics --install-types --non-interactive
     - name: Type check with mypy
-      run: mypy .
+      run: mypy -p simplyanalytics
