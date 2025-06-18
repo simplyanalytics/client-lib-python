@@ -1,4 +1,4 @@
-import requests     # type: ignore
+import requests
 from typing import Optional
 
 
