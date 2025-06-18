@@ -7,8 +7,7 @@ A Python library for searching and retrieving SimplyAnalytics data.
 Download and install with PIP:
 
 ```shell
-git clone https://github.com/simplyanalytics/client-lib-python
-pip install client-lib-python/
+pip install git+https://github.com/simplyanalytics/client-lib-python
 ```
 
 ## Usage
