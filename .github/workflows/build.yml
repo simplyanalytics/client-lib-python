@@ -17,8 +17,10 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install mypy
+        pip install black mypy
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         mypy -p simplyanalytics --install-types --non-interactive
     - name: Type check with mypy
       run: mypy -p simplyanalytics
+    - name: Format check with black
+      run: black --check .
