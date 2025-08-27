@@ -39,9 +39,14 @@ class SimplyAnalyticsClient:
         }
 
     def get_latest_available_datasets_filter(self) -> list:
-        return ["or"] + [
-            ["and", ["=", "dataset_series", dataset_series], ["=", "year", edition]]
-            for dataset_series, edition in self.get_latest_available_datasets().items()
+        return [
+            "and",
+            ["not", ["=", "h_historical", "true"]],
+            ["or"]
+            + [
+                ["and", ["=", "dataset_series", dataset_series], ["=", "year", edition]]
+                for dataset_series, edition in self.get_latest_available_datasets().items()
+            ],
         ]
 
     def get_data_categories(self) -> dict[str, str]:
