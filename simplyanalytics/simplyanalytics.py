@@ -199,3 +199,13 @@ class SimplyAnalyticsClient:
             query["slice"] = slice
 
         return self.get_locations(query)
+
+    def aggregate_data(self, attributes: list[str], where: list) -> list:
+        query = {
+            "select": attributes,
+            "aggregates": [{
+                "locationSeries": where
+            }]
+        }
+
+        return self.get_locations(query)
