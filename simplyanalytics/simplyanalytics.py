@@ -180,12 +180,7 @@ class SimplyAnalyticsClient:
             {
                 "select": ["locationSeries", "name", "geographicUnit"],
                 "locationSeries": where,
-                "sort": [
-                    [
-                        "desc",
-                        "name",
-                    ]
-                ],
+                "sort": [["desc", "name"]],
             }
         )
 
