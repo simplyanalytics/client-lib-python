@@ -125,6 +125,7 @@ class SimplyAnalyticsClient:
         latest_only: bool = True,
         fields: list[str] = ["attribute", "name", "type"],
         dataset_series: Optional[list[str]] = None,
+        categories: Optional[list[str]] = None,
     ) -> list:
         where: list[str | int | list] = [
             "and",
@@ -147,6 +148,9 @@ class SimplyAnalyticsClient:
 
         if dataset_series:
             where.append(["in", "dataset_series", dataset_series])
+
+        if categories:
+            where.append(self.get_any_categories_filter(categories))
 
         return self.get_attributes(
             {
