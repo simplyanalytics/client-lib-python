@@ -45,7 +45,10 @@ class SimplyAnalyticsClient:
 
     def get_latest_census_releases(self) -> dict[str, int]:
         countries = self.get_institution()["countries"]
-        return {k: max(v["censusReleases"].keys()) for k, v in countries.items()}
+        return {
+            country: max(int(release) for release in values["censusReleases"].keys())
+            for country, values in countries.items()
+        }
 
     def get_latest_census_releases_filter(self) -> list:
         return ["or"] + [
