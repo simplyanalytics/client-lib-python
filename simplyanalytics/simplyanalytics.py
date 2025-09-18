@@ -14,7 +14,7 @@ class SimplyAnalyticsClient:
         self._institution: dict | None = None
         self._available_datasets: dict | None = None
 
-    def query(self, v: str, r: str, data: Optional[dict] = None):
+    def _query(self, v: str, r: str, data: Optional[dict] = None):
         params = {"v": v, "r": r}
 
         if self.key:
@@ -33,13 +33,13 @@ class SimplyAnalyticsClient:
 
     def get_available_datasets(self) -> dict:
         if not self._available_datasets:
-            self._available_datasets = self.query("get", "attributeDatasetSeries")
+            self._available_datasets = self._query("get", "attributeDatasetSeries")
         assert self._available_datasets is not None
         return self._available_datasets
 
     def get_institution(self) -> dict:
         if not self._institution:
-            self._institution = self.query("get", "institution")
+            self._institution = self._query("get", "institution")
         assert self._institution is not None
         return self._institution
 
@@ -112,7 +112,7 @@ class SimplyAnalyticsClient:
         return ["and"] + self.get_categories_filter(categories)
 
     def get_attributes(self, data: dict) -> list:
-        return self.query("get", "attributes", data)["hits"]
+        return self._query("get", "attributes", data)["hits"]
 
     def find_attributes(
         self,
@@ -124,6 +124,7 @@ class SimplyAnalyticsClient:
         exact_match: bool = False,
         latest_only: bool = True,
         fields: list[str] = ["attribute", "name", "type"],
+        dataset_series: Optional[list[str]] = None,
     ) -> list:
         where: list[str | int | list] = [
             "and",
@@ -144,6 +145,9 @@ class SimplyAnalyticsClient:
         else:
             where.append(self.get_latest_census_releases_filter())
 
+        if dataset_series:
+            where.append(["in", "dataset_series", dataset_series])
+
         return self.get_attributes(
             {
                 "where": where,
@@ -154,7 +158,7 @@ class SimplyAnalyticsClient:
         )
 
     def get_locations(self, data: dict) -> list:
-        return self.query("get", "data/locations2", data)
+        return self._query("get", "data/locations2", data)
 
     def find_locations(
         self,
