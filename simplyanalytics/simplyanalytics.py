@@ -11,8 +11,10 @@ class SimplyAnalyticsClient:
         self.key = key
         self.url = url if url else "https://app.simplyanalytics.com/dispatch.php"
         self._cookies: dict[str, str] = {}
+        self._institution: dict | None = None
+        self._available_datasets: dict | None = None
 
-    def query(self, v: str, r: str, data: Optional[dict] = None):
+    def _query(self, v: str, r: str, data: Optional[dict] = None):
         params = {"v": v, "r": r}
 
         if self.key:
@@ -30,7 +32,29 @@ class SimplyAnalyticsClient:
         return response.json()
 
     def get_available_datasets(self) -> dict:
-        return self.query("get", "attributeDatasetSeries")
+        if not self._available_datasets:
+            self._available_datasets = self._query("get", "attributeDatasetSeries")
+        assert self._available_datasets is not None
+        return self._available_datasets
+
+    def get_institution(self) -> dict:
+        if not self._institution:
+            self._institution = self._query("get", "institution")
+        assert self._institution is not None
+        return self._institution
+
+    def get_latest_census_releases(self) -> dict[str, int]:
+        countries = self.get_institution()["countries"]
+        return {
+            country: max(int(release) for release in values["censusReleases"].keys())
+            for country, values in countries.items()
+        }
+
+    def get_latest_census_releases_filter(self) -> list:
+        return ["or"] + [
+            ["and", ["=", "country", country], ["=", "census_release", release]]
+            for country, release in self.get_latest_census_releases().items()
+        ]
 
     def get_latest_available_datasets(self) -> dict:
         return {
@@ -88,10 +112,7 @@ class SimplyAnalyticsClient:
         return ["and"] + self.get_categories_filter(categories)
 
     def get_attributes(self, data: dict) -> list:
-        return self.query("get", "attributes", data)["hits"]
-
-    def get_locations(self, data: dict) -> list:
-        return self.query("get", "data/locations2", data)
+        return self._query("get", "attributes", data)["hits"]
 
     def find_attributes(
         self,
@@ -100,25 +121,94 @@ class SimplyAnalyticsClient:
         country: Optional[str] = None,
         census_release: Optional[int] = None,
         limit: int = 100,
+        exact_match: bool = False,
+        latest_only: bool = True,
+        fields: list[str] = ["attribute", "name", "type"],
+        dataset_series: Optional[list[str]] = None,
+        categories: Optional[list[str]] = None,
     ) -> list:
         where: list[str | int | list] = [
             "and",
             ["=", "status", "visible"],
-            ["~", "name", name],
+            ["=" if exact_match else "~", "name", name],
         ]
 
         if year:
             where.append(["=", "year", year])
+        elif latest_only:
+            where.append(self.get_latest_available_datasets_filter())
+
         if country:
             where.append(["=", "country", country])
+
         if census_release:
             where.append(["=", "censusRelease", census_release])
+        else:
+            where.append(self.get_latest_census_releases_filter())
+
+        if dataset_series:
+            where.append(["in", "dataset_series", dataset_series])
+
+        if categories:
+            where.append(self.get_any_categories_filter(categories))
 
         return self.get_attributes(
             {
                 "where": where,
-                "fields": ["attribute", "name", "type"],
+                "fields": fields,
                 "slice": [0, limit],
                 "sort": [["asc", "grouped_order"]],
             }
         )
+
+    def get_locations(self, data: dict) -> list:
+        return self._query("get", "data/locations2", data)
+
+    def find_locations(
+        self,
+        name: str,
+        country: Optional[str] = None,
+        geographic_unit: Optional[str] = None,
+        census_release: Optional[int] = None,
+    ) -> list:
+        predicates: list = [
+            ["startswith", attribute("name"), name],
+        ]
+
+        if geographic_unit:
+            predicates.append(["=", attribute("geographicUnit"), geographic_unit])
+        if census_release:
+            predicates.append(["=", attribute("censusRelease"), census_release])
+        if country:
+            predicates.append(["=", attribute("country"), country])
+
+        where = predicates[0] if len(predicates) == 1 else ["and"] + predicates
+
+        return self.get_locations(
+            {
+                "select": ["locationSeries", "name", "geographicUnit"],
+                "locationSeries": where,
+                "sort": [["desc", "name"]],
+            }
+        )
+
+    def get_data(
+        self,
+        attributes: list[str],
+        where: list,
+        sort: Optional[list[tuple[str, dict]]] = None,
+        slice: Optional[tuple[int, int]] = None,
+    ) -> list:
+        query: dict[str, tuple | list] = {"select": attributes, "locationSeries": where}
+
+        if sort:
+            query["sort"] = sort
+        if slice:
+            query["slice"] = slice
+
+        return self.get_locations(query)
+
+    def aggregate_data(self, attributes: list[str], where: list) -> list:
+        query = {"select": attributes, "aggregates": [{"locationSeries": where}]}
+
+        return self.get_locations(query)
