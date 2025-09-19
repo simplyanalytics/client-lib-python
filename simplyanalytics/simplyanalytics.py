@@ -196,10 +196,10 @@ class SimplyAnalyticsClient:
         self,
         attributes: list[str],
         where: list,
-        sort: Optional[list[list]] = None,
-        slice: Optional[list[int]] = None,
+        sort: Optional[list[tuple[str, dict]]] = None,
+        slice: Optional[tuple[int, int]] = None,
     ) -> list:
-        query = {"select": attributes, "locationSeries": where}
+        query: dict[str, tuple | list] = {"select": attributes, "locationSeries": where}
 
         if sort:
             query["sort"] = sort
