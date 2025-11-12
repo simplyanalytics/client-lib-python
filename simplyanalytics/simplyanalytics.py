@@ -1,5 +1,5 @@
 import requests
-from typing import Optional
+from typing import Optional, Literal
 
 
 def attribute(id: str) -> dict:
@@ -111,8 +111,23 @@ class SimplyAnalyticsClient:
     def get_all_categories_filter(self, categories: list[str]) -> list:
         return ["and"] + self.get_categories_filter(categories)
 
-    def get_attributes(self, data: dict) -> list:
-        return self._query("get", "attributes", data)["hits"]
+    def get_attributes(
+        self,
+        fields: list[str],
+        where: list,
+        sort: Optional[list[tuple[Literal["asc", "desc"], str]]] = None,
+        slice: Optional[tuple[int, int]] = None,
+    ) -> list:
+        return self._query(
+            "get",
+            "attributes",
+            {
+                "fields": fields,
+                "where": ["and", ["=", "status", "visible"], where],
+                "sort": sort if sort else [("asc", "order")],
+                "slice": slice if slice else (0, 100),
+            },
+        )["hits"]
 
     def find_attributes(
         self,
@@ -129,7 +144,6 @@ class SimplyAnalyticsClient:
     ) -> list:
         where: list[str | int | list] = [
             "and",
-            ["=", "status", "visible"],
             ["=" if exact_match else "~", "name", name],
         ]
 
@@ -153,16 +167,34 @@ class SimplyAnalyticsClient:
             where.append(self.get_any_categories_filter(categories))
 
         return self.get_attributes(
-            {
-                "where": where,
-                "fields": fields,
-                "slice": [0, limit],
-                "sort": [["asc", "grouped_order"]],
-            }
+            fields,
+            where,
+            slice=(0, limit),
         )
 
     def get_locations(self, data: dict) -> list:
         return self._query("get", "data/locations2", data)
+
+    def get_data(
+        self,
+        attributes: list[str],
+        where: list,
+        sort: Optional[list[tuple[Literal["asc", "desc"], dict]]] = None,
+        slice: Optional[tuple[int, int]] = None,
+    ) -> list:
+        query: dict[str, tuple | list] = {"select": attributes, "locationSeries": where}
+
+        if sort:
+            query["sort"] = sort
+        if slice:
+            query["slice"] = slice
+
+        return self.get_locations(query)
+
+    def aggregate_data(self, attributes: list[str], where: list) -> list:
+        query = {"select": attributes, "aggregates": [{"locationSeries": where}]}
+
+        return self.get_locations(query)
 
     def find_locations(
         self,
@@ -184,31 +216,8 @@ class SimplyAnalyticsClient:
 
         where = predicates[0] if len(predicates) == 1 else ["and"] + predicates
 
-        return self.get_locations(
-            {
-                "select": ["locationSeries", "name", "geographicUnit"],
-                "locationSeries": where,
-                "sort": [["desc", "name"]],
-            }
+        return self.get_data(
+            ["locationSeries", "name", "geographicUnit"],
+            where,
+            sort=[("desc", attribute("name"))],
         )
-
-    def get_data(
-        self,
-        attributes: list[str],
-        where: list,
-        sort: Optional[list[tuple[str, dict]]] = None,
-        slice: Optional[tuple[int, int]] = None,
-    ) -> list:
-        query: dict[str, tuple | list] = {"select": attributes, "locationSeries": where}
-
-        if sort:
-            query["sort"] = sort
-        if slice:
-            query["slice"] = slice
-
-        return self.get_locations(query)
-
-    def aggregate_data(self, attributes: list[str], where: list) -> list:
-        query = {"select": attributes, "aggregates": [{"locationSeries": where}]}
-
-        return self.get_locations(query)

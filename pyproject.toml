@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "simplyanalytics"
-version = "2025.9"
+version = "2025.11"
 requires-python = ">= 3.11"
 dependencies = [
     "requests"
