@@ -1,5 +1,5 @@
 import requests
-from typing import Optional
+from typing import Optional, Literal
 
 
 def attribute(id: str) -> dict:
@@ -115,7 +115,7 @@ class SimplyAnalyticsClient:
         self,
         fields: list[str],
         where: list,
-        sort: Optional[list[tuple[str, str]]] = None,
+        sort: Optional[list[tuple[Literal["asc", "desc"], str]]] = None,
         slice: Optional[tuple[int, int]] = None,
     ) -> list:
         return self._query(
@@ -179,7 +179,7 @@ class SimplyAnalyticsClient:
         self,
         attributes: list[str],
         where: list,
-        sort: Optional[list[tuple[str, dict]]] = None,
+        sort: Optional[list[tuple[Literal["asc", "desc"], dict]]] = None,
         slice: Optional[tuple[int, int]] = None,
     ) -> list:
         query: dict[str, tuple | list] = {"select": attributes, "locationSeries": where}
