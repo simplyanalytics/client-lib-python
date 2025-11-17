@@ -29,7 +29,7 @@ client = SimplyAnalyticsClient(os.getenv('SA_KEY'))
 
 ## Finding and Retrieving Data
 
-SimplyAnalytics represents data as _attributes_ of _locations_. Attributes and locations, further organized into time series.
+SimplyAnalytics represents data as _attributes_ of _locations_. Attributes and locations are further organized into time series.
 
 To access data, you'll need:
 - IDs of the attributes you want to retrieve
@@ -55,7 +55,7 @@ print(client.find_attributes("total population"))
 
 ### Find Locations
 
-Find all places with "new york" in name:
+Find all places (cities, towns, etc.) with "new york" in name:
 
 ```python
 print(client.find_locations("new york", geographic_unit="usa:place"))
@@ -64,7 +64,7 @@ print(client.find_locations("new york", geographic_unit="usa:place"))
 [["usa:place:3651000", "New York, NY", "usa:place"], ["usa:place:3651011", "New York Mills, NY", "usa:place"], ["usa:place:2746060", "New York Mills, MN", "usa:place"]]
 ```
 **Notes:**
-- Each result includes a location series ID for data selection, plus the location name geographic unit.
+- Each result includes a location series ID for data selection, plus the location name and geographic unit.
 - `geographic_unit` is optional. [View available geographic units](docs/data_retrieval.md#geographic-units).
 
 ### Get Attribute Data for a Specific Location
@@ -169,4 +169,4 @@ print(results)
 ```
 **Notes:**
 - `USACSSUB->population_3_pct` is `% Sex | Male` and the returned aggregate is the total sum of `# Sex | Male` divided by the total sum of `# Sex | Total population` of the selected block groups.
-- If an attribute cannot be aggregated, such as some medians and percents, `null` is returned.
+- For attributes which cannot be aggregated, such as some medians and percents, `null` is returned.

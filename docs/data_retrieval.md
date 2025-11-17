@@ -15,18 +15,6 @@ Attribute arguments are represented as objects with an `attribute` key set to ei
       ```json
       ["=", {"attribute": "geographicUnit"}, "usa:state"]
       ```
-- `~`
-    - A fuzzy text match that matches if the attribute contains the words in the string after first converting both to normalized lexemes.
-    - Arguments: a valid attribute and search string
-        - *This is only available for two business point attributes: `names` and `code_descriptions`*.
-    - Example: Search D&B dataset for businesses in New York state containing "working horse" in any of their names.
-      ```json
-      [
-          "and",
-          ["within", "usa:state:36"],
-          ["~", {"attribute": "DBUSA->names"}, "working horse"]
-      ]
-      ```
 - `startswith`
     - Matches if a text attribute starts with the given string. Matching is case-insensitive and both values may be stripped of diacritics.
     - Arguments: A text attribute and string to search for.
@@ -61,8 +49,8 @@ Attribute arguments are represented as objects with an `attribute` key set to ei
       ["contains", -13629430, 4549569]
       ```
 - `radius`
-    - Matches if the location matches the geographic identifier and its centroid is within the specified distance of the location whose ID is passed as the last operand, or if it contains the centroid of that location. The geographic identifier is either a geographic unit ID or `duns` for D&B business points.
-    - Arguments: geographic identifier, radius in meters, location ID
+    - Matches if the location matches the geographic unit and its centroid is within the specified distance of the location whose ID is passed as the last operand, or if it contains the centroid of that location.
+    - Arguments: geographic unit, radius in meters, location ID
     - Example: return all ZIP codes within 1km of ZIP code 90210:
       ```json
       ["radius", "usa:zipCode", 1000, "usa:zipCode:90210"]
@@ -112,17 +100,17 @@ Attribute arguments are represented as objects with an `attribute` key set to ei
 ## System Attributes
 The following system attributes are available to all users in addition to subscription data.
 
-| Attribute ID                    | Description                                                                                                                                                                      |
-|---------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `locationSeries`                | An ID that uniquely identifies a location regardless of time. This is similar to a "spatial ID" but globally unique. For example, `usa:state:04` always refers to Arizona state. |
-| `name`                          | The name of a location.                                                                                                                                                          |
-| `geographicUnit`                | The geographic unit of a location. See list below for possible values.                                                                                                           |
-| `censusRelease`                 | The major census release of this location. For US locations this is the decennial census.                                                                                        |
-| `geographicRelease`             | The geographic release of a location. This represents updates within a census.                                                                                                   |
-| `country`                       | The country of a location.                                                                                                                                                       |
-| `extent`                        | The geographic extent (i.e. bounding box) of a location.                                                                                                                         |
-| `polygon`                       | The polygon of a location.                                                                                                                                                       |
-| `polygon->{geographic release}` | Polygon attributes for specific annual geographic releases, e.g. `polygon->2020`                                                                                                 |
+| Attribute ID                    | Description                                                                                                                                                                             |
+|---------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `locationSeries`                | An ID that uniquely identifies a location regardless of time. This is similar to a "spatial ID" but globally unique. For example, `usa:state:04` always refers to the state of Arizona. |
+| `name`                          | The name of a location.                                                                                                                                                                 |
+| `geographicUnit`                | The geographic unit of a location. See list below for possible values.                                                                                                                  |
+| `censusRelease`                 | The major census release of this location. For US locations this is the decennial census.                                                                                               |
+| `geographicRelease`             | The geographic release of a location. This represents updates within a census.                                                                                                          |
+| `country`                       | The country of a location.                                                                                                                                                              |
+| `extent`                        | The geographic extent (i.e. bounding box) of a location.                                                                                                                                |
+| `polygon`                       | The polygon of a location.                                                                                                                                                              |
+| `polygon->{geographic release}` | Polygon attributes for specific annual geographic releases, e.g. `polygon->2020`                                                                                                        |
 
 Additionally, there are attributes for each geographic unit for each location representing parent relationships. For example, a block group has a `usa:censusTract` attribute that indicates its parent census tract.
 
@@ -153,7 +141,6 @@ SimplyAnalytics has data for the following geographic units. Not all datasets ha
 | usa:zipCode                  | Zip Codes                         |
 | usa:censusTract              | Census Tracts                     |
 | usa:censusBlockGroup         | Block Groups                      |
-| usa:duns                     | USA Business Points               |
 | usa:scrbgh                   | USA Scarborough Crosstab Points   |
 | usa:smnncs                   | USA Simmons NCS Crosstab Points   |
 
@@ -169,4 +156,3 @@ SimplyAnalytics has data for the following geographic units. Not all datasets ha
 | can:csd            | Census Subdivisions      |
 | can:ct             | Census Tracts            |
 | can:da             | Dissemination Areas      |
-| can:duns           | Canadian Business Points |
