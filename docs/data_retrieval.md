@@ -107,14 +107,14 @@ The following system attributes are available to all users in addition to subscr
 | `geographicUnit`                | The geographic unit of a location. See list below for possible values.                                                                                                                  |
 | `censusRelease`                 | The major census release of this location. For US locations this is the decennial census.                                                                                               |
 | `geographicRelease`             | The geographic release of a location. This represents updates within a census.                                                                                                          |
-| `country`                       | The country of a location in Web Mercator. The format is `[minX, minY, maxX, maxY]`.                                                                                                    |
-| `extent`                        | The geographic extent (i.e. bounding box) of a location.                                                                                                                                |
+| `country`                       | The country of a location.                                                                                                                                                              |
+| `extent`                        | The geographic extent (i.e. bounding box) of a location in Web Mercator. The format is `[minX, minY, maxX, maxY]`.                                                                      |
 | `polygon`                       | The polygon of a location as a GeoJSON [geometry object](https://www.rfc-editor.org/rfc/rfc7946#section-3.1).                                                                           |
 | `polygon->{geographic release}` | Polygon for a specific annual geographic release, e.g. `polygon->2020`. Returned as a GeoJSON [geometry object](https://www.rfc-editor.org/rfc/rfc7946#section-3.1).                    |
 
 Additionally, each location has an attribute for each geographic unit representing parent relationships. For example, a block group has a `usa:censusTract` attribute that indicates its parent census tract. The value is `null` if there is no parent relationship.
 
-Note that some locations have multiple parents of the same unit. For example, it's possible for a ZIP code to be in two places at once.
+Note that some locations have multiple parents of the same unit. For example, it's possible for a ZIP code to be in two places at once. In this case, the parent IDs are returned as pipe (`|`) delimited strings.
 
 ### Geographic Units
 
