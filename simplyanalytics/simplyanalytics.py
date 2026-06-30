@@ -111,7 +111,7 @@ class SimplyAnalyticsClient:
     def get_all_categories_filter(self, categories: list[str]) -> list:
         return ["and"] + self.get_categories_filter(categories)
 
-    def get_attributes(
+    def _find_attributes(
         self,
         fields: list[str],
         where: list,
@@ -119,7 +119,7 @@ class SimplyAnalyticsClient:
         slice: Optional[tuple[int, int]] = None,
     ) -> list:
         return self._query(
-            "get",
+            "find",
             "attributes",
             {
                 "fields": fields,
@@ -166,7 +166,7 @@ class SimplyAnalyticsClient:
         if categories:
             where.append(self.get_any_categories_filter(categories))
 
-        return self.get_attributes(
+        return self._find_attributes(
             fields,
             where,
             slice=(0, limit),
